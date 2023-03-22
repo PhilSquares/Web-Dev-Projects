@@ -2,6 +2,7 @@
 The inspiration/design for each of my projects in this repository are heavily based on the following Udemy course. I've included a few links below as well as a description on the topics covered in the course taught by Dr. Angula Yu (Developer and Lead Instructor). See details below 😀.
 
 Course Link: https://www.udemy.com/course/the-complete-web-development-bootcamp/
+
 Instructor Bio: https://www.udemy.com/user/4b4368a3-b5c8-4529-aa65-2056ec31f37e/
 
 Course Description:
