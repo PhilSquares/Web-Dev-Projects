@@ -33,7 +33,7 @@ $(".btn").click(function () {
 });
 
 function checkAnswer(currentLevel) {
-    //Checks if the most recent users answer is the same as the game pattern.
+    //Checks if the most recent user answer is the same as the game pattern.
     if (gamePattern[currentLevel] === userClickedPattern[currentLevel]) {
 
         //If the user got the most recent answer correct, then check that they have finished their sequence with another if statement.
@@ -62,6 +62,7 @@ function checkAnswer(currentLevel) {
     }
 
 }
+
 /*
 Function that creates a random number between 0 and 3, uses the random number to select a random color from the buttonColours array, 
 adds the new randomChosenColour to the end of the empty gamePattern array, animates the associated ID using jQuery, and plays the appropiate sound 
@@ -81,6 +82,15 @@ function nextSequence() {
 
     $("#" + randomChosenColor).fadeIn(100).fadeOut(100).fadeIn(100);
     playSound(randomChosenColor);
+}
+
+//Function that takes a single input parameter (currentColor) and uses jQuery to add the pressed class styled in the styles.css file to the button that gets clicked inside animatePress(). 
+//setTimeout() removes the style applied when a button is clicked after 100 milliseconds.
+function animatePress(currentColor) {
+    $("#" + currentColor).addClass("pressed");
+    setTimeout(function () {
+        $("#" + currentColor).removeClass("pressed");
+    }, 100);
 }
 
 //Function that takes a single input parameter (name) and plays the expected sound from the sounds directory.
