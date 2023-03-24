@@ -7,7 +7,6 @@
 .dice {
     text-align: center;
     display: inline-block;
-
 }
 
 body {
@@ -38,5 +37,4 @@ footer {
     text-align: center;
     font-family: 'Indie Flower', cursive;
     font-size: 3rem;
-
 }
