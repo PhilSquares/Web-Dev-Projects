@@ -2,23 +2,55 @@
 
 const express = require("express");
 const bodyParser = require("body-parser");
-const date = require(__dirname + "/date.js");
+const mongoose = require("mongoose");
 
 const app = express();
-const port = 5000
-const items = ["Buy Food", "Cook Food", "Eat Food"];
-const workItems = [];
+//Removed items and workItems arrays in place of a new Mongoose implementation.
+    //Installed Mongoose using "npm i mongoose"
 
 //Setup bodyParser: Must be setup before req.body.newItem can be used below.
 app.use(bodyParser.urlencoded({ extended: true }));
 //Tell Express where to find the styles for the application:
 app.use(express.static("public"));
 
+//Create a new Database inside MongoDB and connect to it:
+mongoose.connect("mongodb://localhost:27017/todolistDB", { useNewUrlParser: true });
+
+const itemsSchema = {
+    name: String
+};
+//Create a model based on the itemsSchema above:
+    //Mongoose models usually start with an uppercase letter.
+const Item = mongoose.model("Item", itemsSchema);
+
+//Mongoose Documents:
+const item1 = new Item({
+    name: "Welcome to your todolist"
+});
+
+const item2 = new Item({
+    name: "Click the + button to add a new item."
+});
+
+const item3 = new Item({
+    name: "Click the - button to delete an item."
+});
+
+const defaultItems = [item1, item2, item3];
+
+Item.insertMany(defaultItems)
+    .then(function () {
+        console.log("Successfully saved defult items to DB");
+    })
+    .catch(function (err) {
+        console.log(err);
+    });
+
 app.set("view engine", "ejs");
 
 app.get("/", function (req, res) {
-    const day = date.getDate();
-    res.render("list", { listTitle: day, newListItems: items });
+    // Render the defaultItems list with the "Today" title: 
+    res.render("list", { listTitle: "Today", newListItems: items });
 });
 
 app.post("/", function (req, res) {
@@ -43,5 +75,3 @@ app.post("/delete", function (req, res) {
     items.splice(itemIndex, 1);
     res.redirect("/");
 });
-
-app.listen(process.env.PORT || port, () => console.log(`Listening on port ${port}`))
