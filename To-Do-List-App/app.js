@@ -41,6 +41,16 @@ const defaultItems = [item1, item2, item3];
 app.set("view engine", "ejs");
 
 app.get("/", function (req, res) {
+
+    Item.find({})
+      .then(function (foundItems) {
+        res.render("list", { listTitle: "Today", newListItems: foundItems });
+      })
+      .catch(function (err) {
+        console.log(err);
+        res.send("An error occurred while fetching the items from the database.");
+      });
+      
     //Check when a user accesses the root route/if the items collection is empty:
     if(foundItems.length === 0) {
         Item.insertMany(defaultItems)
@@ -54,29 +64,19 @@ app.get("/", function (req, res) {
     } else {
         res.render("list", { listTitle: "Today", newListItems: foundItems });
     }
-
-
-    Item.find({})
-      .then(function (foundItems) {
-        res.render("list", { listTitle: "Today", newListItems: foundItems });
-      })
-      .catch(function (err) {
-        console.log(err);
-        res.send("An error occurred while fetching the items from the database.");
-      });
   });
 
 app.post("/", function (req, res) {
     //Grabs the item from the post request.
-    const item = req.body.newItem;
-    //If the request comes from our work list, push the value to the workItems array.
-    if (req.body.list === "Work") {
-        workItems.push(item);
-        res.redirect("/work");
-    } else {
-        items.push(item);
-        res.redirect("/");
-    }
+    const itemName = req.body.newItem;
+
+    const item = new Item({
+        name: itemName
+    });
+    //Moongose shortcut that saves the item in the document above into the collection of items. 
+    item.save();
+
+    res.redirect("/");
 });
 
 app.get("/work", function (req, res) {
