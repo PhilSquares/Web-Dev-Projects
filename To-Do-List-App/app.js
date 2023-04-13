@@ -101,12 +101,24 @@ app.get("/:customListName", function(req, res){
 app.post("/", function (req, res) {
     //Grabs the item from the post request.
     const itemName = req.body.newItem;
+    //req.body.list corresponds to the name="list" button seen in the <form> with class="item" written in the list.ejs file. 
+    const listName = req.body.list;
+
     const item = new Item({
         name: itemName
     });
+
+    if(listName === "Today"){
     //Moongose shortcut that saves the item in the document above into the collection of items. 
-    item.save();
-    res.redirect("/");
+        item.save();
+        res.redirect("/");
+    } else {
+        List.findOne({name: listName}, function(err, foundList){
+            foundList.items.push(item);
+            foundList.save();
+            res.redirect("/" + listName);
+        })
+    }
 });
 
 app.get("/work", function (req, res) {
