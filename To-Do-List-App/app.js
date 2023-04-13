@@ -84,9 +84,13 @@ app.get("/work", function (req, res) {
 });
 
 app.post("/delete", function (req, res) {
-    const itemIndex = req.body.itemIndex;
-    items.splice(itemIndex, 1);
-    res.redirect("/");
+    const checkedItemId = req.body.checkbox;
+    Item.findByIdAndRemove(checkedItemId, function(err){
+        if(!err){
+            console.log("Successfully deleted checked item.");
+            res.redirect("/");
+        }
+    })
 });
 
 app.listen(3000, function(){
