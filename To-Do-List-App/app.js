@@ -3,10 +3,11 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const _ = require("lodash");
 
 const app = express();
 //Removed items and workItems arrays in place of a new Mongoose implementation.
-    //Installed Mongoose using "npm i mongoose"
+//Installed Mongoose using "npm i mongoose"
 
 //Setup bodyParser: Must be setup before req.body.newItem can be used below.
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -20,7 +21,7 @@ const itemsSchema = {
     name: String
 };
 //Create a model based on the itemsSchema above:
-    //Mongoose models usually start with an uppercase letter.
+//Mongoose models usually start with an uppercase letter.
 const Item = mongoose.model("Item", itemsSchema);
 
 //Mongoose Documents:
@@ -51,52 +52,50 @@ app.set("view engine", "ejs");
 app.get("/", function (req, res) {
 
     Item.find({})
-      .then(function (foundItems) {
-        res.render("list", { listTitle: "Today", newListItems: foundItems });
-      })
-      .catch(function (err) {
-        console.log(err);
-        res.send("An error occurred while fetching the items from the database.");
-      });
-      
-    //Check when a user accesses the root route/if the items collection is empty:
-    if(foundItems.length === 0) {
-        Item.insertMany(defaultItems)
-            .then(function () {
-            console.log("Successfully saved defult items to DB");
+        .then(function (foundItems) {
+            //Check when a user accesses the root route/if the items collection is empty:
+            if (foundItems.length === 0) {
+                Item.insertMany(defaultItems)
+                    .then(function () {
+                        console.log("Successfully saved defult items to DB");
+                    })
+                    .catch(function (err) {
+                        console.log(err);
+                    });
+                res.redirect("/");
+            } else {
+                res.render("list", { listTitle: "Today", newListItems: foundItems });
+            }
         })
         .catch(function (err) {
             console.log(err);
+            res.send("An error occurred while fetching the items from the database.");
         });
-        res.redirect("/");
-    } else {
-        res.render("list", { listTitle: "Today", newListItems: foundItems });
-    }
-  });
+});
 
 //Create a dynamic route using Express Route Parameters:
-app.get("/:customListName", function(req, res){
-    const customListName = req.params.customListName;
+app.get("/:customListName", function (req, res) {
+    const customListName = _.capitalize(req.params.customListName);
 
-    List.findOne({name: customListName}, function(err, foundList){
-        if(!err){
-            if(!foundList){
-            //If no lists were found then create a new list: 
+    List.findOne({ name: customListName }, function (err, foundList) {
+        if (!err) {
+            if (!foundList) {
+                //If no lists were found then create a new list: 
                 const list = new List({
                     name: customListName,
                     items: defaultItems
                 });
-            
+
                 list.save();
                 res.redirect("/" + customListName);
-            } else{
-            //Show an existing list:
-                res.render("list", {listTitle: foundList.name, newListItems: foundList.items})
+            } else {
+                //Show an existing list:
+                res.render("list", { listTitle: foundList.name, newListItems: foundList.items })
             }
         }
     });
 
-});  
+});
 
 app.post("/", function (req, res) {
     //Grabs the item from the post request.
@@ -108,12 +107,12 @@ app.post("/", function (req, res) {
         name: itemName
     });
 
-    if(listName === "Today"){
-    //Moongose shortcut that saves the item in the document above into the collection of items. 
+    if (listName === "Today") {
+        //Moongose shortcut that saves the item in the document above into the collection of items. 
         item.save();
         res.redirect("/");
     } else {
-        List.findOne({name: listName}, function(err, foundList){
+        List.findOne({ name: listName }, function (err, foundList) {
             foundList.items.push(item);
             foundList.save();
             res.redirect("/" + listName);
@@ -127,14 +126,27 @@ app.get("/work", function (req, res) {
 
 app.post("/delete", function (req, res) {
     const checkedItemId = req.body.checkbox;
-    Item.findByIdAndRemove(checkedItemId, function(err){
-        if(!err){
-            console.log("Successfully deleted checked item.");
-            res.redirect("/");
-        }
-    })
+    const listName = req.body.listName;
+
+    if (listName === "Today") {
+        Item.findByIdAndRemove(checkedItemId, function (err) {
+            if (!err) {
+                console.log("Successfully deleted checked item.");
+                res.redirect("/");
+            }
+        });
+    } else {
+        //The 3 inputs specified in .findOneAndUpdate are {condition: which list to find}, {Updates we want to make}, {callback} 
+        //The update below pulls an item from the items array that has an ID that corresponds to the checkedItemID in the list of ToDo tasks.
+        List.findOneAndUpdate({ name: listName }, { $pull: { items: { _id: checkedItemId } } }, function (err, foundList) {
+            if (!err) {
+                //Redirect to the custom list path.
+                res.redirect("/" + listName);
+            }
+        });
+    }
 });
 
-app.listen(3000, function(){
+app.listen(3000, function () {
     console.log("Server started on port 3000");
 });
