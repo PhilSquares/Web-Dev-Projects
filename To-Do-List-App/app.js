@@ -38,6 +38,14 @@ const item3 = new Item({
 
 const defaultItems = [item1, item2, item3];
 
+//Every new list created will have a name and an array of item documents associated.  
+const listSchema = {
+    name: String,
+    items: [itemsSchema]
+};
+
+const List = mongoose.model("List", listSchema);
+
 app.set("view engine", "ejs");
 
 app.get("/", function (req, res) {
@@ -66,16 +74,38 @@ app.get("/", function (req, res) {
     }
   });
 
+//Create a dynamic route using Express Route Parameters:
+app.get("/:customListName", function(req, res){
+    const customListName = req.params.customListName;
+
+    List.findOne({name: customListName}, function(err, foundList){
+        if(!err){
+            if(!foundList){
+            //If no lists were found then create a new list: 
+                const list = new List({
+                    name: customListName,
+                    items: defaultItems
+                });
+            
+                list.save();
+                res.redirect("/" + customListName);
+            } else{
+            //Show an existing list:
+                res.render("list", {listTitle: foundList.name, newListItems: foundList.items})
+            }
+        }
+    });
+
+});  
+
 app.post("/", function (req, res) {
     //Grabs the item from the post request.
     const itemName = req.body.newItem;
-
     const item = new Item({
         name: itemName
     });
     //Moongose shortcut that saves the item in the document above into the collection of items. 
     item.save();
-
     res.redirect("/");
 });
 
