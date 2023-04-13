@@ -38,20 +38,33 @@ const item3 = new Item({
 
 const defaultItems = [item1, item2, item3];
 
-Item.insertMany(defaultItems)
-    .then(function () {
-        console.log("Successfully saved defult items to DB");
-    })
-    .catch(function (err) {
-        console.log(err);
-    });
-
 app.set("view engine", "ejs");
 
 app.get("/", function (req, res) {
-    // Render the defaultItems list with the "Today" title: 
-    res.render("list", { listTitle: "Today", newListItems: items });
-});
+    //Check when a user accesses the root route/if the items collection is empty:
+    if(foundItems.length === 0) {
+        Item.insertMany(defaultItems)
+            .then(function () {
+            console.log("Successfully saved defult items to DB");
+        })
+        .catch(function (err) {
+            console.log(err);
+        });
+        res.redirect("/");
+    } else {
+        res.render("list", { listTitle: "Today", newListItems: foundItems });
+    }
+
+
+    Item.find({})
+      .then(function (foundItems) {
+        res.render("list", { listTitle: "Today", newListItems: foundItems });
+      })
+      .catch(function (err) {
+        console.log(err);
+        res.send("An error occurred while fetching the items from the database.");
+      });
+  });
 
 app.post("/", function (req, res) {
     //Grabs the item from the post request.
@@ -74,4 +87,8 @@ app.post("/delete", function (req, res) {
     const itemIndex = req.body.itemIndex;
     items.splice(itemIndex, 1);
     res.redirect("/");
+});
+
+app.listen(3000, function(){
+    console.log("Server started on port 3000");
 });
