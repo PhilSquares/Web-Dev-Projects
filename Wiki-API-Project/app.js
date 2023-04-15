@@ -23,7 +23,11 @@ const articleSchema = {
 
 const Article = mongoose.model("Article", articleSchema);
 
-app.get("/articles", function (req, res) {
+//Created new data inside of the MongoDB Database using Mongoose (const newArticle = new Article...)
+//title and content store data that is received through the post request through req.body seen below. 
+app.route("/articles")
+
+.get(function (req, res) {
     Article.find(function (err, foundArticles) {
         if (!err) {
             res.send(foundArticles);
@@ -32,11 +36,9 @@ app.get("/articles", function (req, res) {
         }
 
     });
-});
+})
 
-//Created data inside the MongoDB Database using Mongoose (const newArticle = new Article...)
-//title and content store data that is received through the post request through req.body below. 
-app.post("/articles", function(req, res){
+.post(function(req, res){
     
     const newArticle = new Article({
         title: req.body.title,
@@ -49,10 +51,9 @@ app.post("/articles", function(req, res){
             res.send(err);
         }
     });
-});
+})
 
-//How our server will respond when a user makes a DELETE request.
-app.delete("/articles", function(req, res){
+.delete(function(req, res){
     Article.deleteMany(function(err){
         if(!err){
             res.send("Successfully deleted all articles.");
