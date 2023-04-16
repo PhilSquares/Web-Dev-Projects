@@ -77,7 +77,25 @@ app.route("/articles/articleTitle")
             res.send("No articles matching that title were found.");
         }
     });
+})
+
+//Update Code Structure: <ModelName>.update({conditions}, {updates}, {overwrite: true} function(err, results){});
+//Note: Mongoose will prevent properties from being overwritten by default. 
+.put(function(req, res){
+    Article.update(
+        {title: req.params.articleTitle}, 
+        {title: req.body.title, content: req.body.content},
+        {overwrite: true},
+        function(err){
+            if(!err){
+                res.send("Successfully updated article");
+            }
+        }
+    );
 });
+
+//If we don't want to replace the entire document with values submitted in the PUT request, use a PATCH request (see below):
+
 
 app.listen(3000, function () {
     console.log("Server started on port 3000");
