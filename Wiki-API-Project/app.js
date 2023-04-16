@@ -88,14 +88,28 @@ app.route("/articles/articleTitle")
         {overwrite: true},
         function(err){
             if(!err){
-                res.send("Successfully updated article");
+                res.send("Successfully updated the selected article");
             }
         }
     );
-});
+})
 
-//If we don't want to replace the entire document with values submitted in the PUT request, use a PATCH request (see below):
-
+//If we don't want to replace the entire document with values submitted in the PUT request, use a PATCH request (see below).
+//Alternative Update Code Structure: <ModelName>.update({conditions}, {$set: updates}, function(err, results){});
+//$set --> {$set: { <field1>: <value1>, ... } }
+.patch(function(req, res){
+    Article.update(
+        {title: req.params.articleTitle},
+        {$set: req.body},
+        function(err){
+            if(!err){
+                res.send("Successfully updated article.");
+            } else {
+                res.send(err);
+            }
+        }
+    );
+})
 
 app.listen(3000, function () {
     console.log("Server started on port 3000");
