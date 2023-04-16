@@ -23,6 +23,8 @@ const articleSchema = {
 
 const Article = mongoose.model("Article", articleSchema);
 
+///////////////////////////////////Requests Targetting all Articles////////////////////////
+
 //Created new data inside of the MongoDB Database using Mongoose (const newArticle = new Article...)
 //title and content store data that is received through the post request through req.body seen below. 
 app.route("/articles")
@@ -59,6 +61,20 @@ app.route("/articles")
             res.send("Successfully deleted all articles.");
         } else{
             res.send(err);
+        }
+    });
+});
+
+///////////////////////////////////Requests Targetting A Specific Article////////////////////////
+
+app.route("/articles/articleTitle")
+
+.get(function(req, res){
+    Article.findOne({title: req.params.articleTitle}, function(err, foundArticle){
+        if(foundArticle){
+            res.send(foundArticle);
+        } else {
+            res.send("No articles matching that title were found.");
         }
     });
 });
