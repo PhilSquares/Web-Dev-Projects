@@ -4,7 +4,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const moongoose = require("mongoose");
-const encrypt = require("mongoose-encryption");
+const md5 = require("md5");
 const { default: mongoose } = require("mongoose");
 
 const app = express();
@@ -19,9 +19,6 @@ const userSchema = new mongoose.Schema({
     email: String,
     password: String
 });
-
-//Add the following encrypt package as a plugin before creating a mongoose model:
-userSchema.plugin(encrypt, { secret: process.env.SECRET, encryptedFields: ["password"] });
 
 const User = new mongoose.model("User", userSchema);
 
@@ -42,7 +39,8 @@ app.post("/register", function(req, res){
         //.username comes from the name value in the input tag seen in register.ejs line 14. 
         //.password comes from the name value in the input tag seen in register.ejs line 18.
         email: req.body.username,
-        password: req.body.password
+        //Turns the password into an irreversible hash.
+        password: md5(req.body.password)
     });
 
     newUser.save(function(err){
@@ -56,7 +54,7 @@ app.post("/register", function(req, res){
 
 app.post("/login", function(req, res){
     const username = req.body.username;
-    const password = req.body.password;
+    const password = md5(req.body.password);
 
     //Check if the password is equal to the one that the user typed in:
     User.findOne({email: username}, function(err, foundUser){
