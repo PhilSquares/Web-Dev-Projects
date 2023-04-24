@@ -7,6 +7,8 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const findOrCreate = require("mongoose-findorcreate");
 
 const app = express();
 
@@ -37,11 +39,28 @@ const userSchema = new mongoose.Schema({
 //The plugin below will Hash/Salt each password and save users into the MongoDB database.  
 userSchema.plugin(passportLocalMongoose);
 
+//The following plugin is needed for GoogleStrategy's OAuth code implemented below. 
+userSchema.plugin(findOrCreate);
+
 const User = new mongoose.model("User", userSchema);
 passport.use(User.createStrategy());
 
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
+
+//Setup/configure Google Strategy using OAuth.
+passport.use(new GoogleStrategy({
+    clientID: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+    callbackURL: "http://localhost:3000/auth/google/secrets",
+    userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
+  },
+  function(accessToken, refreshToken, profile, cb) {
+    User.findOrCreate({ googleId: profile.id }, function (err, user) {
+      return cb(err, user);
+    });
+  }
+));
 
 app.get("/", function (req, res) {
     res.render("home");
