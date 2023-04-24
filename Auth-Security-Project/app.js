@@ -33,7 +33,8 @@ mongoose.set("useCreateIndex", true);
 
 const userSchema = new mongoose.Schema({
     email: String,
-    password: String
+    password: String,
+    googleId: String
 });
 
 //The plugin below will Hash/Salt each password and save users into the MongoDB database.  
@@ -45,8 +46,16 @@ userSchema.plugin(findOrCreate);
 const User = new mongoose.model("User", userSchema);
 passport.use(User.createStrategy());
 
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
+//Passport package code to serialize/deserialize all strategies. 
+passport.serializeUser(function(user, done){
+    done(null, user.id);
+});
+
+passport.deserializeUser(function(id, done){
+    User.findById(id, function(err, user){
+        done(err, user);
+    });
+});
 
 //Setup/configure Google Strategy using OAuth.
 passport.use(new GoogleStrategy({
@@ -64,6 +73,13 @@ passport.use(new GoogleStrategy({
 
 app.get("/", function (req, res) {
     res.render("home");
+});
+
+//Route for Google OAuth.
+app.get("/auth/google", passport.authenticate("google", { scope: ["profile"] }));
+
+app.get("/auth/google/secrets", passport.authenticate("google", { failureRedirect: "/login" }), function(req, res){
+    res.redirect("/secrets");
 });
 
 app.get("/login", function (req, res) {
