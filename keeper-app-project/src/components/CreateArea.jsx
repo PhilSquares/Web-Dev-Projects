@@ -1,6 +1,6 @@
 import React from "react";
 
-function CreateArea() {
+function CreateArea(props) {
 
     //Create stateful constants (object that contains both the title and content):
     const [note, setNote] = useState({
@@ -23,12 +23,18 @@ function CreateArea() {
         });
     }
 
+    function submitNote(event){
+        //onAdd() in the App.jsx file is triggered by the props in line 3 above.
+        props.onAdd(note);
+        event.preventDefault();
+    }
+
     return (
         <div>
             <form>
                 <input name="title" onChange={handleChange} value={note.title} placeholder="Title"></input>
                 <textarea name="content" onChange={handleChange} value={note.content} placeholder="Take a note..." rows="3"></textarea>
-                <button>Add</button>
+                <button onClick={submitNote}>Add</button>
             </form>
         </div>
     );
